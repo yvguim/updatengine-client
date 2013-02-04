@@ -45,24 +45,43 @@ def main():
 
 	while True:
 		
-		inventory = ueinventory.build_inventory()
-		if inventory is not None:
-			print "Inventory built"
+		try:
+			inventory = ueinventory.build_inventory()
+		except Exception as inst:
+			print "Error when building inventory"
+			print type(inst)
+			print inst
+			break
+		else:
+			if inventory is not None:
+				localtime   = time.localtime()
+				print time.strftime("%Y-%m-%d-%H:%M:%S", localtime)
+				print "Inventory built"
 
-		if options.verbose is not None:
-			print inventory
-	
-		if options.inventory is not None and options.server is not None:
-			url = options.server+'/post/'
-			response_inventory = uecommunication.send_inventory(url,inventory,options)
-			if response_inventory[0]==1:
-				print "Inventory sent to "+url
-				if options.verbose is not None:
-					print response_inventory[1]
-				download.download_action(url,str(response_inventory[1]), options)
-			else:
-				print "Inventory error when trying to post inventory to "+url
-				print "Error code: "+response_inventory[1]
+			if options.verbose is not None:
+				print inventory
+		
+			if options.inventory is not None and options.server is not None:
+				url = options.server+'/post/'
+		
+				try:	
+					response_inventory = uecommunication.send_inventory(url,inventory,options)
+				except Exception as inst:
+						print "Error on send_inventory process"
+						print type(inst)
+						print inst
+						break
+				else:
+					print "Inventory sent to "+url
+					if options.verbose is not None:
+						print response_inventory
+					try:
+						download.download_action(url,str(response_inventory), options)
+					except Exception as inst:
+						print "Error on download_action function"
+						print type(inst)
+						print inst
+						break
 		if last:
 			break
 		else:

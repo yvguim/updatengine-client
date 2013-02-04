@@ -25,71 +25,130 @@ import tempfile
 import subprocess
 from ueinventory import ueinventory
 import hashlib
-from time import sleep
+import time
 
 class uedownload():
+	urlinv = None
+	xml = None
+	options = None
+	mid = None
+	pid = None
 	
 	def download_action(self,urlinv,xml, options = None):
-		root = etree.fromstring(xml)
+		self.urlinv = urlinv
+		self.xml = xml
+		self.options = options
+		try:
+			root = etree.fromstring(self.xml)
+		except:
+			print self.xml
+			print "Error reading xml response in download_action"
+			raise
 		# download_launch is used to know if a download action append
 		download_launch = None
 		break_download_action = None
 		try:
 			for pack in root.findall('Package'):
 				
-				print 'Package: '+pack.find('Name').text
-				mid = pack.find('Id').text
-				pid = pack.find('Pid').text
-				command = pack.find('Command').text
-				if command.find('download_no_restart') != -1:
-       	        	                break_download_action = False
-       		        	        command = command.replace('\n',' && ')
-				command = command.replace('&& download_no_restart','')
-				command = command.replace('&& section_end','')
-				url = pack.find('Url').text
-				packagesum = pack.find('Packagesum').text
-				download_launch = True
 				try:
-					uecommunication.send_xml(urlinv,'<Packstatus><Mid>'+mid+'</Mid><Pid>'+pid+'</Pid><Status>Ready to download and execute</Status></Packstatus>','status', options)
+					self.download_print_time()
+					print 'Package: '+pack.find('Name').text
+					self.mid = pack.find('Id').text
+					self.pid = pack.find('Pid').text
+					command = pack.find('Command').text
+					if command.find('download_no_restart') != -1:
+						break_download_action = False
+						command = command.replace('\n',' && ')
+					command = command.replace('&& download_no_restart','')
+					command = command.replace('&& section_end','')
+					url = pack.find('Url').text
+					packagesum = pack.find('Packagesum').text
+					download_launch = True
 				except:
-					return "Erreur uecommunication.send_xml / status"
+					print "Error in package xml format"
+					raise
+
+				self.download_send_status('Ready to download and execute')
 				
 				if packagesum != 'nofile':
-					file_name = tempfile.gettempdir()+'/'+url.split('/')[-1]
-					if self.download_tmp(url,file_name,packagesum) == 1:
-						print 'Install in progress'
-						uecommunication.send_xml(urlinv,'<Packstatus><Mid>'+mid+'</Mid><Pid>'+pid+'</Pid><Status>Install in progress</Status></Packstatus>','status', options)
-						try:
-							os.chdir(tempfile.gettempdir())
-							error = str(subprocess.call(command, shell = True))
-						except Exception as e:
-							error = str(e)
-					else :
+					try:
+						file_name = tempfile.gettempdir()+'/'+url.split('/')[-1]
+						self.download_tmp(url,file_name,packagesum)
+					except:
+						self.download_print_time()
 						print 'Error when downloading' + file_name
-					os.remove(file_name)
-				else:
+						self.download_send_status('Error downloading file '+file_name)
+						raise
+					else:
 						print 'Install in progress'
-						uecommunication.send_xml(urlinv,'<Packstatus><Mid>'+mid+'</Mid><Pid>'+pid+'</Pid><Status>Install in progress</Status></Packstatus>','status', options)
+						self.download_send_status('Install in progress')
+
 						try:
 							os.chdir(tempfile.gettempdir())
-							error = str(subprocess.call(command, shell = True))
-						except Exception as e:
-							error = str(e)
-				if error !='0':
-					uecommunication.send_xml(urlinv,'<Packstatus><Mid>'+mid+'</Mid><Pid>'+pid+'</Pid><Status>Error when executing action. Error code: '+error+'</Status></Packstatus>','status', options)
-					break_download_action = True
+							subprocess.check_call(command, shell = True)
+						except Exception as inst:
+							print "Error launching action"+command
+							print type(inst)
+							print inst
+							self.download_send_status('Error when executing: '+command+' | Error code: '+str(inst))
+							raise
+						finally:
+							os.remove(file_name)
 				else:
-					uecommunication.send_xml(urlinv,'<Packstatus><Mid>'+mid+'</Mid><Pid>'+pid+'</Pid><Status>Operation completed</Status></Packstatus>','status',options)
-				sleep(5)
+					print 'Install in progress'
+					self.download_send_status('Install in progress')
+
+					try:
+						os.chdir(tempfile.gettempdir())
+						subprocess.check_call(command, shell = True)
+					except Exception as inst:
+						print "Error launching action"+command
+						print type(inst)
+						print inst
+						self.download_send_status('Error when executing: '+command+' | Error code: '+str(inst))
+						raise
+
+				self.download_print_time()
+				self.download_send_status('Operation completed')
+				time.sleep(5)
 		except:
-			return "Error detected when launching download_action"
-		if download_launch:
-			inventory = ueinventory.build_inventory()
-			response_inventory = uecommunication.send_inventory(urlinv, inventory, options)
-			# Break download action if an error occured during a previous install
-			if break_download_action == None:
-				self.download_action(urlinv,str(response_inventory[1]),options)
+			print "Error detected when launching download_action"
+			raise
+		else:	
+			# Loop download action
+			if download_launch:
+				try:
+					inventory = ueinventory.build_inventory()
+					response_inventory = uecommunication.send_inventory(urlinv, inventory, options)
+					# Break download action if an error occured during a previous install
+					if break_download_action == None:
+						self.download_action(urlinv,str(response_inventory),options)
+				except:
+					print "Error in Loop download action"
+					raise
+				print "End of download and install "
+				self.download_print_time()
 	
+	
+	
+	def download_send_status(self,message):
+		try:
+			header = '<Packstatus><Mid>'+self.mid+'</Mid><Pid>'+self.pid+'</Pid><Status>'
+			tail = '</Status></Packstatus>'
+			full_message = header + message + tail
+			uecommunication.send_xml(self.urlinv,full_message,'status',self.options)
+		except:
+			print "Erreur uecommunication.send_xml / status"
+			raise
+
+
+
+	def download_print_time(self):
+		localtime   = time.localtime()
+		print time.strftime("%Y-%m-%d-%H:%M:%S", localtime)
+
+
+
 	def download_tmp(self,url,file_name,packagesum):
 		try:
 			print url
@@ -126,13 +185,17 @@ class uedownload():
 			return "Error download_tmp"
 
 
+
 	def md5_for_file(self, file_name,block_size=2**20):
-		f = open(file_name, 'rb')
-		md5 = hashlib.md5()
-		while True:
-			data = str(f.read(block_size))
-			if not data:
-				break
-			md5.update(data)
-		f.close()
+		try:
+			f = open(file_name, 'rb')
+			md5 = hashlib.md5()
+			while True:
+				data = str(f.read(block_size))
+				if not data:
+					break
+				md5.update(data)
+			f.close()
+		except:
+			raise
 		return str(md5.hexdigest())

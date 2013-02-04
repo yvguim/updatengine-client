@@ -18,8 +18,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. #
 ###################################################################################
 
-import os
-import sys
 import ssl
 import urllib, urllib2
 import urlparse
@@ -28,13 +26,17 @@ from lxml import etree
 class uecommunication:
 
 	def check_ssl(self, hostname, port, cafile_local):
-    		if not os.path.isfile(cafile_local):
-       		 print >> sys.stderr, "No cacert.pem found !"
+		try:
+			open(cafile_local,'r')
+		except :
+			print "Error in check_ssl (open function)"
+			raise
+
    	 	try:
         		ssl.get_server_certificate((hostname, port), ca_certs=cafile_local)
     		except ssl.SSLError:
-        		print >> sys.stderr, "SSL cert at %s:%d is invalid!" % (hostname, port)
-        		raise 
+			print "Error in check_ssl (ssl.get_server_certificate function)"
+			raise ssl.SSLError('SSL cert of Host:'+str(hostname)+' Port:'+str(port)+' is invalid')  
 
 	def printable(self, s):
 		import string
@@ -44,11 +46,15 @@ class uecommunication:
 	@staticmethod
 	def send_xml(url,xml,action,options = None):
 		self = uecommunication()
-                try:
-			xml = self.printable(xml)
-			cookieHandler = urllib2.HTTPCookieProcessor()
+		xml = self.printable(xml)
+		cookieHandler = urllib2.HTTPCookieProcessor()
+		try:
 			urlbits = urlparse.urlparse(url)
-			if options.cert is not None:
+		except Exception:
+			print "Error in send_xml (urlparse.urlparse function)"
+			raise
+		if options.cert is not None:
+			try:
 				if urlbits.scheme == 'https':
 					if ':' in urlbits.netloc:
 						hostname, port = urlbits.netloc.split(':')
@@ -59,39 +65,53 @@ class uecommunication:
 					else:
 						port = urlbits.port
 					self.check_ssl(hostname, int(port), options.cert)
-
-			opener = urllib2.build_opener( urllib2.HTTPSHandler(), cookieHandler )
-			urllib2.install_opener( opener )
+			except:
+				raise
+		
+		opener = urllib2.build_opener( urllib2.HTTPSHandler(), cookieHandler )
+		urllib2.install_opener( opener )
+		
+		try:
 			opener.open(url)
-			cookie = None
-			for cookie in cookieHandler.cookiejar:
-				if cookie.name == 'csrftoken':
-					csrf_cookie = cookie
-					break
-				if not cookie:
-					raise IOError( "No csrf cookie found" )
+		except Exception:
+			raise
+		
+		cookie = None
+		for cookie in cookieHandler.cookiejar:
+			if cookie.name == 'csrftoken':
+				csrf_cookie = cookie
+				break
+		if cookie is None:
+			raise IOError( "No csrf cookie found" )
+		try:
 			parameter = urllib.urlencode(dict(action=action,xml=xml,csrfmiddlewaretoken=csrf_cookie.value))
 			req = urllib2.Request(url, parameter)
 			req.add_header('Referer', url)
 			response = urllib2.urlopen(req).read()
-		except Exception as e:
-			return str(e)
+		except Exception:
+			raise
                 return response
 
 	@staticmethod
 	def send_inventory(url, xml, options = None):
 		self = uecommunication()
-		response = self.send_xml(url,xml,'inventory', options)
 		try:
-			root  = etree.fromstring(response)	
-		except:
-			return (0,'Error while reading response after inventory\n\
-			Response:\n'+response+'\n')
-		if root.find('Import') is not None:
-			if root.find('Import').text == 'Import ok':
-				return (1,response)	
-			else:
-				return (0,response)
+			response = self.send_xml(url,xml,'inventory', options)
+		except Exception:
+			raise
 		else:
-				return (0,response)
+			try:
+				root  = etree.fromstring(response)	
+			except Exception:
+				print "Response send by server:"
+				print response
+				raise
+
+			if root.find('Import') is not None:
+				if root.find('Import').text == 'Import ok':
+					return response	
+				else:
+					raise StandardError(response)
+			else:
+				raise StandardError(response)
 

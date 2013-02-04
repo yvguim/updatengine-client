@@ -20,7 +20,7 @@
 
 import platform
 import subprocess
-import os, sys
+import os
 import dmidecode
 import hashlib
 class ueinventory():
@@ -30,40 +30,40 @@ class ueinventory():
 	 # Check if root user
 		root = (os.getuid() == 0)
 		if not root:
-			sys.exit("#### Program stopped: You MUST use this program as root user ###")
+			raise StandardError("#### Program stopped: You MUST use this program as root user ###")
+		else:
+			self = ueinventory()
+			dmixml = dmidecode.dmidecodeXML()
+			dmixml.SetResultType(dmidecode.DMIXML_DOC)
+			xmldoc = dmixml.QuerySection('all')
+			dmixp = xmldoc.xpathNewContext()
+			
+			manufacturer = self.get_manufacturer(dmixp)
+			product = self.get_product(dmixp)
+			serial = self.get_serial(dmixp)
+			chassistype = self.get_chassistype(dmixp)
+			hostname = self.get_hostname()
+			osdata = self.format_oslist(self.get_oslist())
+			ossum =  str(hashlib.md5(osdata).hexdigest())
+			softwaredata = self.format_softlist(self.get_softwarelist())
+			softsum = str(hashlib.md5(softwaredata).hexdigest()) 
+			netdata = self.format_netlist(self.get_netlist())
+			netsum =  str(hashlib.md5(netdata).hexdigest())
+			data = "<Inventory>\n\
+				<Hostname>"+hostname.strip()+"</Hostname>\n\
+				<SerialNumber>"+serial.strip()+"</SerialNumber>\n\
+				<Manufacturer>"+manufacturer.strip()+"</Manufacturer>\n\
+				<Product>"+product.strip()+"</Product>\n\
+				<Chassistype>"+chassistype.strip()+"</Chassistype>\n\
+				<Ossum>"+ossum+"</Ossum>\n\
+				<Softsum>"+softsum+"</Softsum>\n\
+				<Netsum>"+netsum+"</Netsum>\n\
+				"+osdata+"\n\
+				"+softwaredata+"\n\
+				"+netdata+"\n\
+				</Inventory>"
 
-		self = ueinventory()
-		dmixml = dmidecode.dmidecodeXML()
-		dmixml.SetResultType(dmidecode.DMIXML_DOC)
-		xmldoc = dmixml.QuerySection('all')
-		dmixp = xmldoc.xpathNewContext()
-		
-		manufacturer = self.get_manufacturer(dmixp)
-		product = self.get_product(dmixp)
-		serial = self.get_serial(dmixp)
-		chassistype = self.get_chassistype(dmixp)
-		hostname = self.get_hostname()
-		osdata = self.format_oslist(self.get_oslist())
-		ossum =  str(hashlib.md5(osdata).hexdigest())
-		softwaredata = self.format_softlist(self.get_softwarelist())
-		softsum = str(hashlib.md5(softwaredata).hexdigest()) 
-		netdata = self.format_netlist(self.get_netlist())
-		netsum =  str(hashlib.md5(netdata).hexdigest())
-		data = "<Inventory>\n\
-			<Hostname>"+hostname.strip()+"</Hostname>\n\
-			<SerialNumber>"+serial.strip()+"</SerialNumber>\n\
-			<Manufacturer>"+manufacturer.strip()+"</Manufacturer>\n\
-			<Product>"+product.strip()+"</Product>\n\
-			<Chassistype>"+chassistype.strip()+"</Chassistype>\n\
-			<Ossum>"+ossum+"</Ossum>\n\
-			<Softsum>"+softsum+"</Softsum>\n\
-			<Netsum>"+netsum+"</Netsum>\n\
-			"+osdata+"\n\
-			"+softwaredata+"\n\
-			"+netdata+"\n\
-			</Inventory>"
-
-		return data
+			return data
 
 
 	def checkdmi(self, dmixp,tag):
