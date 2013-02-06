@@ -26,7 +26,7 @@ import subprocess
 from ueinventory import ueinventory
 import hashlib
 import time
-
+import shutil
 class uedownload():
 	urlinv = None
 	xml = None
@@ -72,7 +72,10 @@ class uedownload():
 				
 				if packagesum != 'nofile':
 					try:
-						file_name = tempfile.gettempdir()+'/'+url.split('/')[-1]
+						tmpdir = tempfile.gettempdir()+'/updatengine/'
+						if not os.path.exists(tmpdir):
+							os.makedirs(tmpdir)
+						file_name = tmpdir+url.split('/')[-1]
 						self.download_tmp(url,file_name,packagesum)
 					except:
 						self.download_print_time()
@@ -84,7 +87,7 @@ class uedownload():
 						self.download_send_status('Install in progress')
 
 						try:
-							os.chdir(tempfile.gettempdir())
+							os.chdir(tmpdir)
 							subprocess.check_call(command, shell = True)
 						except Exception as inst:
 							print "Error launching action"+command
@@ -93,13 +96,14 @@ class uedownload():
 							self.download_send_status('Error when executing: '+command+' | Error code: '+str(inst))
 							raise
 						finally:
-							os.remove(file_name)
+							# come back to gettemdir to remove updatengine directory
+							os.chdir(tempfile.gettempdir())
+							shutil.rmtree(tmpdir)
 				else:
 					print 'Install in progress'
 					self.download_send_status('Install in progress')
 
 					try:
-						os.chdir(tempfile.gettempdir())
 						subprocess.check_call(command, shell = True)
 					except Exception as inst:
 						print "Error launching action"+command
@@ -150,6 +154,7 @@ class uedownload():
 
 
 	def download_tmp(self,url,file_name,packagesum):
+		from zipfile import ZipFile
 		try:
 			print url
 			print file_name
@@ -177,6 +182,8 @@ class uedownload():
 			f.close()
 			if self.md5_for_file(file_name) == packagesum:
 				print ''
+				if str(file_name).lower().endswith('.zip'):
+					ZipFile(file_name).extractall(tempfile.gettempdir()+'/updatengine/')
 				return 1
 			else :
 				print 'md5 don\'t match: ' + self.md5_for_file(file_name) +' --- '+ packagesum
