@@ -124,8 +124,7 @@ class ueinventory():
 					pass
 		except:
 			pass
-		# Then read on 32 bits, because 32bits version of python is used, no need to
-		# use KEY_WOW64_64KEY (works at the same time for windows xp 32 bits)
+		# Then read on 32 bits, because 32bits version of python is used
 		try:
 			aReg = ConnectRegistry(None,HKEY_LOCAL_MACHINE)
 			aKey = OpenKey(aReg, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall")
@@ -143,7 +142,9 @@ class ueinventory():
 						uninst = QueryValueEx(asubkey, "UninstallString")
 					except:
 						uninst = ('undefined',)
-					l.append(val[0].encode('utf-8')+','+vers[0].encode('utf-8')+','+uninst[0].encode('utf-8'))
+                                        # Prevent double detection for 32 bits systels
+                                        if not val[0].encode('utf-8')+','+vers[0].encode('utf-8')+','+uninst[0].encode('utf-8') in l:
+                                                l.append(val[0].encode('utf-8')+','+vers[0].encode('utf-8')+','+uninst[0].encode('utf-8'))
 				except:
 					pass
 		except:
