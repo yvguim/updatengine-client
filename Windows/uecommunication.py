@@ -33,8 +33,8 @@ class uecommunication:
             raise
 
         try:
-                ssl.get_server_certificate((hostname, port), ca_certs=cafile_local)
-            except ssl.SSLError:
+            ssl.get_server_certificate((hostname, port), ca_certs=cafile_local)
+        except ssl.SSLError:
             print "Error in check_ssl (ssl.get_server_certificate function)"
             raise ssl.SSLError('SSL cert of Host:'+str(hostname)+' Port:'+str(port)+' is invalid')  
 
@@ -90,7 +90,7 @@ class uecommunication:
             response = urllib2.urlopen(req).read()
         except Exception:
             raise
-                return response
+        return response
 
     @staticmethod
     def send_inventory(url, xml, options = None):

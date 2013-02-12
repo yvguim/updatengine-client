@@ -19,7 +19,6 @@
 # MA  02110-1301, USA.                                                        #
 ###############################################################################
 
-#!/usr/bin/env python
 import optparse
 import time
 from ueinventory import ueinventory
@@ -75,7 +74,6 @@ def main():
                     response_inventory = uecommunication.send_inventory(url, inventory, options)
                 except Exception as inst:
                     print "Error on send_inventory process"
-                    print type(inst)
                     print inst
                     break
                 else:
@@ -86,7 +84,6 @@ def main():
                         download.download_action(url, str(response_inventory), options)
                     except Exception as inst:
                         print "Error on download_action function"
-                        print type(inst)
                         print inst
                         break
         if last:
