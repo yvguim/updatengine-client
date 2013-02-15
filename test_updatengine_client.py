@@ -80,23 +80,15 @@ def xml_not_valid():
 
 # Valid response from server after an inventory without -v option
 def response_valid_inventory():
-    xml ='''"<?xml version="1.0" encoding="UTF-8"?>
-    
-    <Response>
-    
-    
-    <Import>Import ok</Import>
-    
-    
-    </Response>
-
-
-    '''
+    xml ='''<?xml version="1.0" encoding="UTF-8"?>
+<Response><Import>Import ok</Import></Response>
+'''
     return xml
 
 # Class options redifined to simulate options will testing
 class Options:
     cert = None
+
 # uecommunication.py tests
 
 def test_uereadresponse():
@@ -117,7 +109,7 @@ def test_ueresponseerror():
 def test_send_valid_inventory():
     ue = uecommunication()
     options = Options()
-    assert ue.send_inventory("https://127.0.0.1:1979/post/", str(xml_valid()), options) == '<?xml version="1.0" encoding="UTF-8"?>\n\n<Response>\n\n\n<Import>Import ok</Import>\n\n\n</Response>\n\n'
+    assert ue.send_inventory("https://127.0.0.1:1979/post/", str(xml_valid()), options) == response_valid_inventory()
 
 def test_send_not_valid_inventory():
     ue = uecommunication()
