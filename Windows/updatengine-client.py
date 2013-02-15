@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 ###############################################################################
 # UpdatEngine - Software Packages Deployment and Administration tool          #
 #                                                                             #
@@ -19,11 +21,13 @@
 # MA  02110-1301, USA.                                                        #
 ###############################################################################
 
+
 import optparse
 import time
 from ueinventory import ueinventory
 from uecommunication import uecommunication
 from uedownload import uedownload
+
 def main():
 # Define options
     parser = optparse.OptionParser("usage: %prog [options] arg1 arg2")
@@ -53,10 +57,9 @@ def main():
         
         try:
             inventory = ueinventory.build_inventory()
-        except Exception as inst:
+        except Exception:
             print "Error when building inventory"
-            print inst
-            break
+            raise
         else:
             if inventory is not None:
                 localtime   = time.localtime()
@@ -71,20 +74,18 @@ def main():
         
                 try:    
                     response_inventory = uecommunication.send_inventory(url, inventory, options)
-                except Exception as inst:
+                except Exception:
                     print "Error on send_inventory process"
-                    print inst
-                    break
+                    raise
                 else:
                     print "Inventory sent to "+url
                     if options.verbose is not None:
                         print response_inventory
                     try:
                         download.download_action(url, str(response_inventory), options)
-                    except Exception as inst:
+                    except Exception:
                         print "Error on download_action function"
-                        print inst
-                        break
+                        raise
         if last:
             break
         else:
