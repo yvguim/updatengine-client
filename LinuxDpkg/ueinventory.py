@@ -45,7 +45,8 @@ class ueinventory():
             hostname = self.get_hostname()
             osdata = self.format_oslist(self.get_oslist())
             ossum =  str(hashlib.md5(osdata).hexdigest())
-            softwaredata = self.format_softlist(self.get_softwarelist())
+            #softwaredata = self.format_softlist(self.get_softwarelist())
+            softwaredata = ""
             softsum = str(hashlib.md5(softwaredata).hexdigest()) 
             netdata = self.format_netlist(self.get_netlist())
             netsum =  str(hashlib.md5(netdata).hexdigest())

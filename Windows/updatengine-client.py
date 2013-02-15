@@ -55,7 +55,6 @@ def main():
             inventory = ueinventory.build_inventory()
         except Exception as inst:
             print "Error when building inventory"
-            print type(inst)
             print inst
             break
         else:

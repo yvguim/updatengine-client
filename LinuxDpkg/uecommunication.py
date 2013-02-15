@@ -22,6 +22,7 @@ import ssl
 import urllib, urllib2
 import urlparse
 from lxml import etree
+from ueerrors import *
 
 class uecommunication:
 
@@ -92,26 +93,29 @@ class uecommunication:
             raise
         return response
 
+    def valid_response(self, response):
+        """Valid xml response after an inventory"""
+        try:
+            root  = etree.fromstring(response)  
+        except Exception:
+            raise UeReadResponse(response)
+
+        if root.find('Import') is not None:
+            if root.find('Import').text == 'Import ok':
+                return response 
+            else:
+                raise UeImportError(response)
+        else:
+            raise UeResponseError(response)
+
     @staticmethod
     def send_inventory(url, xml, options = None):
+        """Send an inventory to an updatengine server"""
         self = uecommunication()
         try:
             response = self.send_xml(url,xml,'inventory', options)
         except Exception:
             raise
         else:
-            try:
-                root  = etree.fromstring(response)  
-            except Exception:
-                print "Response send by server:"
-                print response
-                raise
-
-            if root.find('Import') is not None:
-                if root.find('Import').text == 'Import ok':
-                    return response 
-                else:
-                    raise StandardError(response)
-            else:
-                raise StandardError(response)
+            return self.valid_response(response)
 
