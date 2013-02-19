@@ -41,10 +41,29 @@ def main():
                    type="int", help="Minute between each inventory")
     parser.add_option("-c", "--cert", dest="cert", \
                    type="string", help="Absolute path to cacert.pem file")
+    parser.add_option("-l", "--list", dest="list", \
+                   action="store_false", help="To get public soft list")
+    parser.add_option("-g", "--get", type = "int", dest="get", \
+                   help="Package number to install  manualy")
     (options, args) = parser.parse_args()
 
     last = False
-    if options.inventory is None:
+
+    if options.list is not None and options.server is not None:
+        print "Public packages software available on server\n"
+        url = options.server+'/post/'
+        softxml = uecommunication.get_public_software_list(url, options)
+        uecommunication.printable_public_software(softxml)
+        raw_input("Press Enter to Exit")
+
+    if options.get is not None and options.server is not None:
+        url = options.server+'/post/'
+        print "Will install package Number: %d \n" % options.get
+        ue = uedownload()
+        ue.download_pack(url, options.get, options)
+        raw_input("Operation finished, press Enter to Exit")
+
+    if options.inventory is None and options.list is None and options.get is None:
         print "Just to test, inventory will not be send"
         last = True
     
@@ -54,6 +73,8 @@ def main():
     download = uedownload()
 
     while True:
+        if options.get is not None or options.list is not None:
+            break
         
         try:
             inventory = ueinventory.build_inventory()

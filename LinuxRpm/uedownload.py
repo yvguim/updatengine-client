@@ -35,9 +35,78 @@ class uedownload():
     options = None
     mid = None
     pid = None
-    
-    def download_action(self,urlinv,xml, options = None):
-        self.urlinv = urlinv
+ 
+    def download_pack(self, url, pack, options ):
+        packxml = uecommunication.get_public_software_list(url, options, pack)
+        try:
+            root = etree.fromstring(packxml)
+        except:
+            print self.xml
+            print "Error reading xml response in download_action"
+            raise
+        try:
+            for pack in root.findall('Package'):
+                
+                try:
+                    self.download_print_time()
+                    print 'Package: '+pack.find('Name').text
+                    self.pid = pack.find('Pid').text
+                    command = pack.find('Command').text
+                    if command.find('download_no_restart') != -1:
+                        command = command.replace('\n',' && ')
+                        command = command.replace('&& download_no_restart','')
+                        command = command.replace('&& section_end','')
+                    url = pack.find('Url').text
+                    packagesum = pack.find('Packagesum').text
+                except:
+                    print "Error in package xml format"
+                    raise
+
+                if packagesum != 'nofile':
+                    try:
+                        tmpdir = tempfile.gettempdir()+'/updatengine/'
+                        if not os.path.exists(tmpdir):
+                            os.makedirs(tmpdir)
+                        file_name = tmpdir+url.split('/')[-1]
+                        self.download_tmp(url,file_name,packagesum)
+                    except:
+                        self.download_print_time()
+                        print 'Error when downloading' + file_name
+                        raise
+                    else:
+                        print 'Install in progress'
+
+                        try:
+                            os.chdir(tmpdir)
+                            subprocess.check_call(command, shell = True)
+                        except Exception as inst:
+                            print "Error launching action"+command
+                            print type(inst)
+                            print inst
+                            raise
+                        finally:
+                            # come back to gettemdir to remove updatengine directory
+                            os.chdir(tempfile.gettempdir())
+                            shutil.rmtree(tmpdir)
+                else:
+                    print 'Install in progress'
+
+                    try:
+                        subprocess.check_call(command, shell = True)
+                    except Exception as inst:
+                        print "Error launching action"+command
+                        print type(inst)
+                        print inst
+                        raise
+
+                self.download_print_time()
+                time.sleep(5)
+        except:
+            print "Error detected when launching download_action"
+            raise
+
+    def download_action(self,url,xml, options = None):
+        self.urlinv = url
         self.xml = xml
         self.options = options
         try:
