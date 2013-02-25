@@ -24,12 +24,14 @@
 
 import optparse
 import time
+import logging
 from ueinventory import ueinventory
 from uecommunication import uecommunication
 from uedownload import uedownload
 
 def main():
 # Define options
+
     parser = optparse.OptionParser("usage: %prog [options] arg1 arg2")
     parser.add_option("-s", "--server", dest="server", \
                    type="string", help="Your UpdatEngine server IP or DNS name")
@@ -45,23 +47,50 @@ def main():
                    action="store_false", help="To get public soft list")
     parser.add_option("-g", "--get", type = "int", dest="get", \
                    help="Package number to install  manualy")
+    parser.add_option("-o", "--out", type = "string", dest="out", \
+                   help="Full path to logfile")
     (options, args) = parser.parse_args()
+
+    if options.out is not None:
+        try:
+            logging.basicConfig(level=logging.DEBUG, filename=options.out)
+        except:
+            logging.basicConfig(level=logging.DEBUG, filename='updatengine-client.log')
+            logging.exception("can't write on "+options.out+" file use default file instead")
+    else:
+        logging.basicConfig(level=logging.DEBUG, filename='updatengine-client.log')
 
     last = False
 
     if options.list is not None and options.server is not None:
+        logging.info("\n\n*********************************\n")
+        localtime   = time.localtime()
+        logging.info("Start: "+ time.strftime("%Y-%m-%d-%H:%M:%S", localtime))
+        
         print "Public packages software available on server\n"
         url = options.server+'/post/'
         softxml = uecommunication.get_public_software_list(url, options)
         uecommunication.printable_public_software(softxml)
+        
+        logging.info("List public packages available on server")
+        localtime   = time.localtime()
+        logging.info("End: "+ time.strftime("%Y-%m-%d-%H:%M:%S", localtime))
         raw_input("Press Enter to Exit")
 
     if options.get is not None and options.server is not None:
+        logging.info("\n\n*********************************\n")
+        localtime   = time.localtime()
+        logging.info("Start: "+ time.strftime("%Y-%m-%d-%H:%M:%S", localtime))
+        
         url = options.server+'/post/'
         print "Will install package Number: %d \n" % options.get
+        logging.info("Launch manual install of "+ str(options.get) +" package")
         ue = uedownload()
         ue.download_pack(url, options.get, options)
+        
         raw_input("Operation finished, press Enter to Exit")
+        localtime   = time.localtime()
+        logging.info("End: "+ time.strftime("%Y-%m-%d-%H:%M:%S", localtime))
 
     if options.inventory is None and options.list is None and options.get is None:
         print "Just to test, inventory will not be send"
@@ -75,17 +104,21 @@ def main():
     while True:
         if options.get is not None or options.list is not None:
             break
+        logging.info("\n\n*********************************\n")
+        localtime   = time.localtime()
+        logging.info("Start: "+ time.strftime("%Y-%m-%d-%H:%M:%S", localtime))
         
         try:
             inventory = ueinventory.build_inventory()
         except Exception:
             print "Error when building inventory"
-            raise
+            logging.exception("Error when building inventory")
         else:
             if inventory is not None:
                 localtime   = time.localtime()
                 print time.strftime("%Y-%m-%d-%H:%M:%S", localtime)
                 print "Inventory built"
+                logging.info("Inventory built")
 
             if options.verbose is not None:
                 print inventory
@@ -97,20 +130,29 @@ def main():
                     response_inventory = uecommunication.send_inventory(url, inventory, options)
                 except Exception:
                     print "Error on send_inventory process"
-                    raise
+                    logging.exception("Error on send_inventory process")
                 else:
                     print "Inventory sent to "+url
+                    logging.info("Inventory sent to "+url)
                     if options.verbose is not None:
                         print response_inventory
                     try:
                         download.download_action(url, str(response_inventory), options)
                     except Exception:
                         print "Error on download_action function"
-                        raise
+                        logging.exception("Error on download_action function")
+        
+        localtime   = time.localtime()
+        logging.info("End: "+ time.strftime("%Y-%m-%d-%H:%M:%S", localtime))
+        
         if last:
             break
         else:
+            logging.info("Waiting "+str(options.minute)+" minute(s) until next inventory")
             time.sleep(options.minute*60)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except:
+        logging.exception("Error in main() function")

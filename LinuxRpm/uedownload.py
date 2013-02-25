@@ -28,6 +28,7 @@ import subprocess
 from ueinventory import ueinventory
 import hashlib
 import time
+import logging
 import shutil
 class uedownload():
     urlinv = None
@@ -43,6 +44,7 @@ class uedownload():
         except:
             print self.xml
             print "Error reading xml response in download_action"
+            logging.exception("Error reading xml response in download_action")
             raise
         try:
             for pack in root.findall('Package'):
@@ -50,6 +52,7 @@ class uedownload():
                 try:
                     self.download_print_time()
                     print 'Package: '+pack.find('Name').text
+                    logging.info('Package: '+pack.find('Name').text)
                     self.pid = pack.find('Pid').text
                     command = pack.find('Command').text
                     if command.find('download_no_restart') != -1:
@@ -60,6 +63,7 @@ class uedownload():
                     packagesum = pack.find('Packagesum').text
                 except:
                     print "Error in package xml format"
+                    logging.exception("Error in package xml format")
                     raise
 
                 if packagesum != 'nofile':
@@ -72,15 +76,18 @@ class uedownload():
                     except:
                         self.download_print_time()
                         print 'Error when downloading' + file_name
+                        logging.exception("Error when downloading "+file_name)
                         raise
                     else:
                         print 'Install in progress'
+                        logging.info('Install in progress')
 
                         try:
                             os.chdir(tmpdir)
                             subprocess.check_call(command, shell = True)
                         except Exception as inst:
-                            print "Error launching action"+command
+                            print "Error launching action: "+command
+                            logging.info("Error launching action: "+command)
                             print type(inst)
                             print inst
                             raise
@@ -90,19 +97,24 @@ class uedownload():
                             shutil.rmtree(tmpdir)
                 else:
                     print 'Install in progress'
+                    logging.info('Install in progress')
 
                     try:
                         subprocess.check_call(command, shell = True)
                     except Exception as inst:
-                        print "Error launching action"+command
+                        print "Error launching action: "+command
+                        logging.info("Error launching action: "+command)
                         print type(inst)
                         print inst
                         raise
 
                 self.download_print_time()
+                print "Operation completed"
+                logging.info("Operation completed")
                 time.sleep(5)
         except:
             print "Error detected when launching download_action"
+            logging.info("Error detected when launching download_action")
             raise
 
     def download_action(self,url,xml, options = None):
@@ -114,6 +126,7 @@ class uedownload():
         except:
             print self.xml
             print "Error reading xml response in download_action"
+            logging.info("Error reading xml response in download_action")
             raise
         # download_launch is used to know if a download action append
         download_launch = None
@@ -124,6 +137,7 @@ class uedownload():
                 try:
                     self.download_print_time()
                     print 'Package: '+pack.find('Name').text
+                    logging.info('Package: '+pack.find('Name').text)
                     self.mid = pack.find('Id').text
                     self.pid = pack.find('Pid').text
                     command = pack.find('Command').text
@@ -137,9 +151,11 @@ class uedownload():
                     download_launch = True
                 except:
                     print "Error in package xml format"
+                    logging.exception("Error in package xml format")
                     raise
 
                 self.download_send_status('Ready to download and execute')
+                logging.info("Ready to download and execute")
                 
                 if packagesum != 'nofile':
                     try:
@@ -150,18 +166,21 @@ class uedownload():
                         self.download_tmp(url,file_name,packagesum)
                     except:
                         self.download_print_time()
-                        print 'Error when downloading' + file_name
+                        print 'Error when downloading: ' + file_name
                         self.download_send_status('Error downloading file '+file_name)
+                        logging.exception("Error when downloading: " + file_name)
                         raise
                     else:
                         print 'Install in progress'
+                        logging.info("Install in progress")
                         self.download_send_status('Install in progress')
 
                         try:
                             os.chdir(tmpdir)
                             subprocess.check_call(command, shell = True)
                         except Exception as inst:
-                            print "Error launching action"+command
+                            print "Error launching action: "+command
+                            logging.exception("Error launching action: "+command)
                             print type(inst)
                             print inst
                             self.download_send_status('Error when executing: '+command+' | Error code: '+str(inst))
@@ -172,12 +191,14 @@ class uedownload():
                             shutil.rmtree(tmpdir)
                 else:
                     print 'Install in progress'
+                    logging.info("Install in progress")
                     self.download_send_status('Install in progress')
 
                     try:
                         subprocess.check_call(command, shell = True)
                     except Exception as inst:
-                        print "Error launching action"+command
+                        print "Error launching action: "+command
+                        logging.exception("Error launching action: "+command)
                         print type(inst)
                         print inst
                         self.download_send_status('Error when executing: '+command+' | Error code: '+str(inst))
@@ -185,21 +206,24 @@ class uedownload():
 
                 self.download_print_time()
                 self.download_send_status('Operation completed')
+                logging.info("Operation completed")
                 time.sleep(5)
         except:
             print "Error detected when launching download_action"
+            logging.exception("Error detected when lauching download_action")
             raise
         else:   
             # Loop download action
             if download_launch:
                 try:
                     inventory = ueinventory.build_inventory()
-                    response_inventory = uecommunication.send_inventory(urlinv, inventory, options)
+                    response_inventory = uecommunication.send_inventory(self.urlinv, inventory, options)
                     # Break download action if an error occured during a previous install
                     if break_download_action == None:
-                        self.download_action(urlinv,str(response_inventory),options)
+                        self.download_action(self.urlinv,str(response_inventory),options)
                 except:
-                    print "Error in Loop download action"
+                    print "Error in loop download action"
+                    logging.exception("Error in loop download action")
                     raise
                 print "End of download and install "
                 self.download_print_time()
@@ -213,7 +237,8 @@ class uedownload():
             full_message = header + message + tail
             uecommunication.send_xml(self.urlinv,full_message,'status',self.options)
         except:
-            print "Erreur uecommunication.send_xml / status"
+            print "Error uecommunication.send_xml / status"
+            logging.exception("Error uecommunication.send_xml / status")
             raise
 
 
@@ -258,8 +283,10 @@ class uedownload():
                 return 1
             else :
                 print 'md5 don\'t match: ' + self.md5_for_file(file_name) +' --- '+ packagesum
+                logging.debug('md5 don\'t match: ' + self.md5_for_file(file_name) +' --- '+ packagesum)
                 return 0
         except:
+            logging.exception("Error download_tmp")
             return "Error download_tmp"
 
 
