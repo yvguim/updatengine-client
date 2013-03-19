@@ -93,7 +93,7 @@ class ueinventory():
             "Sub Chassis"," Bus Expansion Chassis","Peripheral Chassis","Storage Chass",\
             "Rack Mount Chassis","Sealed-Case PC")
         try:
-            args = 'wmic systemenclosure get chassistype'
+            args = 'wmic systemenclosure get chassistypes'
             p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             chassisnumber =  p.stdout.readlines()[1]
             return chassis(chassisnumber-1)
@@ -203,30 +203,32 @@ class ueinventory():
         oslist = list()
         args = 'wmic os get caption'
         p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        
-        if 'Windows XP' in p.stdout.readlines()[1]:
-            args = 'wmic os get caption, csdversion, systemdrive /format:csv'
-            p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            raw = p.stdout.readlines()[2]
-            line = raw.split(',')
-            if len(line) == 4:
-                name = line[1].strip()
-                version = line[2].strip()
-                arch = 'undefined'
-                systemdrive = line[3].strip()
-                oslist.append(name+','+version+','+arch+','+systemdrive)
-        else:
-            args = 'wmic os get caption, csdversion, osarchitecture, systemdrive /format:csv'
-            p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            raw = p.stdout.readlines()[2]
-            line = raw.split(',')
-            if len(line) == 5:
-                name = line[1].strip()
-                version = line[2].strip()
-                arch = line[3].strip()
-                systemdrive = line[4].strip()
-                oslist.append(name+','+version+','+arch+','+systemdrive)
-        
+        try:        
+            if 'Windows XP' in p.stdout.readlines()[1]:
+                args = 'wmic os get caption, csdversion, systemdrive /format:csv'
+                p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                raw = p.stdout.readlines()[2]
+                line = raw.split(',')
+                if len(line) == 4:
+                    name = line[1].strip()
+                    version = line[2].strip()
+                    arch = 'undefined'
+                    systemdrive = line[3].strip()
+                    oslist.append(name+','+version+','+arch+','+systemdrive)
+            else:
+                args = 'wmic os get caption, csdversion, osarchitecture, systemdrive /format:csv'
+                p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                raw = p.stdout.readlines()[2]
+                line = raw.split(',')
+                if len(line) == 5:
+                    name = line[1].strip()
+                    version = line[2].strip()
+                    arch = line[3].strip()
+                    systemdrive = line[4].strip()
+                    oslist.append(name+','+version+','+arch+','+systemdrive)
+        except:
+               oslist = ('Unkown, Unknown, Unknown, Unknown')
+       
         return oslist
 
     def format_oslist(self, oslist):

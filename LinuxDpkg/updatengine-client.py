@@ -63,7 +63,7 @@ def main():
     last = False
 
     if options.list is not None and options.server is not None:
-        logging.info("\n\n*********************************\n")
+        logging.info("*********************************\n")
         localtime   = time.localtime()
         logging.info("Start: "+ time.strftime("%Y-%m-%d-%H:%M:%S", localtime))
         
@@ -78,7 +78,7 @@ def main():
         raw_input("Press Enter to Exit")
 
     if options.get is not None and options.server is not None:
-        logging.info("\n\n*********************************\n")
+        logging.info("*********************************\n")
         localtime   = time.localtime()
         logging.info("Start: "+ time.strftime("%Y-%m-%d-%H:%M:%S", localtime))
         
@@ -104,7 +104,7 @@ def main():
     while True:
         if options.get is not None or options.list is not None:
             break
-        logging.info("\n\n*********************************\n")
+        logging.info("*********************************\n")
         localtime   = time.localtime()
         logging.info("Start: "+ time.strftime("%Y-%m-%d-%H:%M:%S", localtime))
         
@@ -148,7 +148,7 @@ def main():
         if last:
             break
         else:
-            logging.info("Waiting "+str(options.minute)+" minute(s) until next inventory")
+            logging.info("Waiting "+str(options.minute)+" minute(s) until next inventory\n")
             time.sleep(options.minute*60)
 
 if __name__ == "__main__":
