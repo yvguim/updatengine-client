@@ -93,8 +93,12 @@ class uedownload():
                             raise
                         finally:
                             # come back to gettemdir to remove updatengine directory
-                            os.chdir(tempfile.gettempdir())
-                            shutil.rmtree(tmpdir)
+                            try:
+                                os.chdir(tempfile.gettempdir())
+                                shutil.rmtree(tmpdir)
+                            except:
+                                print 'Can\'t delete temp file'
+                                logging.info('Can\'t delete temp file')
                 else:
                     print 'Install in progress'
                     logging.info('Install in progress')
@@ -187,8 +191,12 @@ class uedownload():
                             raise
                         finally:
                             # come back to gettemdir to remove updatengine directory
-                            os.chdir(tempfile.gettempdir())
-                            shutil.rmtree(tmpdir)
+                            try:
+                                os.chdir(tempfile.gettempdir())
+                                shutil.rmtree(tmpdir)
+                            except:
+                                print 'Can\'t delete temp file'
+                                logging.info('Can\'t delete temp file')
                 else:
                     print 'Install in progress'
                     logging.info("Install in progress")
