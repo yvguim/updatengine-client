@@ -95,10 +95,11 @@ class ueinventory():
         try:
             args = 'wmic systemenclosure get chassistypes'
             p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            chassisnumber =  p.stdout.readlines()[1]
-            return chassis(chassisnumber-1)
+            typestring =  p.stdout.readlines()[1]
+            chassisnumber = int(re.findall(r'\d+',typestring)[0])
+            return chassis[chassisnumber]
         except:
-            return 'Unknown'
+            return 'Detection error'
 
     def get_softwarelist(self):     
         l = list()
