@@ -190,7 +190,7 @@ class uedownload():
                             self.download_send_status('Error when executing: '+command+' | Error code: '+str(inst))
                             raise
                         finally:
-                            # come back to gettemdir to remove updatengine directory
+                            # come back to gettempdir to remove updatengine directory
                             try:
                                 os.chdir(tempfile.gettempdir())
                                 shutil.rmtree(tmpdir)
@@ -212,6 +212,7 @@ class uedownload():
                         self.download_send_status('Error when executing: '+command+' | Error code: '+str(inst))
                         raise
 
+                print 'Operation completed'
                 self.download_print_time()
                 self.download_send_status('Operation completed')
                 logging.info("Operation completed")
@@ -224,6 +225,8 @@ class uedownload():
             # Loop download action
             if download_launch:
                 try:
+                    print "End of download and install "
+                    self.download_print_time()
                     inventory = ueinventory.build_inventory()
                     response_inventory = uecommunication.send_inventory(self.urlinv, inventory, options)
                     # Break download action if an error occured during a previous install
@@ -232,9 +235,6 @@ class uedownload():
                 except:
                     print "Error in loop download action"
                     logging.exception("Error in loop download action")
-                    raise
-                print "End of download and install "
-                self.download_print_time()
     
     
     
