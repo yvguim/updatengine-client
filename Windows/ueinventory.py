@@ -31,6 +31,9 @@ class ueinventory():
         manufacturer = self.get_manufacturer()
         product = self.get_product()
         serial = self.get_serial()
+        uuid = self.get_uuid()
+        domain = self.get_domain()
+        language = self.get_language()
         hostname = self.get_hostname()
         chassistype = self.get_chassistype()
         osdata = self.format_oslist(self.get_oslist())
@@ -44,6 +47,9 @@ class ueinventory():
             <Hostname>"+hostname.strip()+"</Hostname>\n\
             <SerialNumber>"+serial.strip()+"</SerialNumber>\n\
             <Manufacturer>"+manufacturer.strip()+"</Manufacturer>\n\
+            <Uuid>"+uuid.strip()+"</Uuid>\n\
+            <Domain>"+domain.strip()+"</Domain>\n\
+            <Language>"+language.strip()+"</Language>\n\
             <Product>"+product.strip()+"</Product>\n\
             <Chassistype>"+chassistype.strip()+"</Chassistype>\n\
             <Ossum>"+ossum+"</Ossum>\n\
@@ -52,8 +58,7 @@ class ueinventory():
             "+osdata+"\n\
             "+softwaredata+"\n\
             "+netdata+"</Inventory>"
-        return data
-
+        return data    
 
     def get_serial(self):
         try:
@@ -83,6 +88,29 @@ class ueinventory():
             args = 'wmic csproduct get name'
             p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             return p.stdout.readlines()[1]
+        except:
+            return 'Unknown'
+
+    def get_uuid(self):
+        try:
+            args = 'wmic path win32_computersystemproduct get uuid'
+            p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            return p.stdout.readlines()[1]
+        except:
+            return 'Unknown'
+        
+    def get_domain(self):
+        try:
+            args = 'wmic computersystem get domain'
+            p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            return p.stdout.readlines()[1]
+        except:
+            return 'Unknown'
+
+    def get_language(self):
+        import locale
+        try:
+            return locale.getdefaultlocale()[0]
         except:
             return 'Unknown'
 
@@ -217,16 +245,14 @@ class ueinventory():
                     systemdrive = line[3].strip()
                     oslist.append(name+','+version+','+arch+','+systemdrive)
             else:
-                args = 'wmic os get caption, csdversion, osarchitecture, systemdrive /format:csv'
+                args = 'wmic os get caption, csdversion, osarchitecture, systemdrive /format:list'
                 p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                raw = p.stdout.readlines()[2]
-                line = raw.split(',')
-                if len(line) == 5:
-                    name = line[1].strip()
-                    version = line[2].strip()
-                    arch = line[3].strip()
-                    systemdrive = line[4].strip()
-                    oslist.append(name+','+version+','+arch+','+systemdrive)
+                raw = p.stdout.readlines()
+                name = raw[2].split("=",1)[1].strip()
+                version = raw[3].split("=",1)[1].strip()
+                arch = raw[4].split("=",1)[1].strip()
+                systemdrive = raw[5].split("=",1)[1].strip()
+                oslist.append(name+','+version+','+arch+','+systemdrive)
         except:
                oslist = ('Unkown, Unknown, Unknown, Unknown')
        

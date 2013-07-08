@@ -42,6 +42,9 @@ class ueinventory():
             manufacturer = self.get_manufacturer(dmixp)
             product = self.get_product(dmixp)
             serial = self.get_serial(dmixp)
+            uuid = self.get_uuid(dmixp)
+            domain = self.get_domain()
+            language = self.get_language()
             chassistype = self.get_chassistype(dmixp)
             hostname = self.get_hostname()
             osdata = self.format_oslist(self.get_oslist())
@@ -54,6 +57,9 @@ class ueinventory():
                 <Hostname>"+hostname.strip()+"</Hostname>\n\
                 <SerialNumber>"+serial.strip()+"</SerialNumber>\n\
                 <Manufacturer>"+manufacturer.strip()+"</Manufacturer>\n\
+                <Uuid>"+uuid.strip()+"</Uuid>\n\
+                <Domain>"+domain.strip()+"</Domain>\n\
+                <Language>"+language.strip()+"</Language>\n\
                 <Product>"+product.strip()+"</Product>\n\
                 <Chassistype>"+chassistype.strip()+"</Chassistype>\n\
                 <Ossum>"+ossum+"</Ossum>\n\
@@ -86,6 +92,32 @@ class ueinventory():
     def get_serial(self, dmixp):
         try:
             return self.checkdmi(dmixp,'/dmidecode/SystemInfo/SerialNumber')
+        except:
+            return 'Unknown'
+
+    def get_uuid(self, dmixp):
+        try:
+            return self.checkdmi(dmixp,'/dmidecode/SystemInfo/SystemUUID')
+        except:
+            return 'Unknown'
+        
+    def get_domain(self):
+        try:
+            import socket
+            fqdn = socket.getfqdn
+            hostname = socket.gethostname()
+            domain = fqdn.replace(hostname,'')
+            if domain != '':
+                return domain
+            else:
+                return 'undefined'
+        except:
+            return 'Unknown'
+
+    def get_language(self):
+        import locale
+        try:
+            return locale.getdefaultlocale()[0]
         except:
             return 'Unknown'
 
