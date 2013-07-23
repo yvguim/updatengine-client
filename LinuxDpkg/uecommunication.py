@@ -26,7 +26,7 @@ import urlparse
 from lxml import etree
 from ueerrors import *
 
-class uecommunication:
+class uecommunication(object):
 
     def check_ssl(self, hostname, port, cafile_local):
         try:

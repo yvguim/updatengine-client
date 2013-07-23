@@ -29,6 +29,30 @@ from ueinventory import ueinventory
 from uecommunication import uecommunication
 from uedownload import uedownload
 
+def wait(minutes, passphrase):
+    import socket
+    from datetime import datetime, timedelta
+    socket.setdefaulttimeout(minutes*60)
+    Sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    Sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    Host = ''
+    Port = 2010
+    Sock.bind((Host,Port))
+    Sock.listen(1)
+    limit = datetime.now()+timedelta(minutes=minutes)
+    print "wait for connexion with passphrase %s or %s" % (passphrase, limit)
+    try:
+        client, adresse = Sock.accept()
+        while datetime.now() < limit:
+            RequeteDuClient = client.recv(255)
+            print RequeteDuClient
+            if RequeteDuClient == passphrase:
+                Sock.close()
+                return
+    except socket.timeout:
+        Sock.close()
+    return
+
 def main():
 # Define options
 
@@ -127,7 +151,7 @@ def main():
                 url = options.server+'/post/'
         
                 try:    
-                    response_inventory = uecommunication.send_inventory(url, inventory, options)
+                    response_inventory = uecommunication.send_inventory(url, inventory[0], options)
                 except Exception:
                     print "Error on send_inventory process"
                     logging.exception("Error on send_inventory process")
@@ -149,7 +173,7 @@ def main():
             break
         else:
             logging.info("Waiting "+str(options.minute)+" minute(s) until next inventory\n")
-            time.sleep(options.minute*60)
+            wait(options.minute, inventory[1])
 
 if __name__ == "__main__":
     try:

@@ -23,7 +23,7 @@ import platform, subprocess
 import re
 from _winreg import *
 import hashlib
-class ueinventory():
+class ueinventory(object):
 
     @staticmethod
     def build_inventory():
@@ -58,7 +58,7 @@ class ueinventory():
             "+osdata+"\n\
             "+softwaredata+"\n\
             "+netdata+"</Inventory>"
-        return data    
+        return (data, softsum)    
 
     def get_serial(self):
         try:
@@ -241,9 +241,19 @@ class ueinventory():
                 if len(line) == 4:
                     name = line[1].strip()
                     version = line[2].strip()
-                    arch = 'undefined'
                     systemdrive = line[3].strip()
-                    oslist.append(name+','+version+','+arch+','+systemdrive)
+                try:
+                    args = 'wmic computersystem get systemtype /format:csv'
+                    p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                    raw = p.stdout.readlines()[2]
+                    line = raw.split(',')
+                    if '86' in line[1].strip():
+                        arch = "32 bits"
+                    elif '64' in line[1].strip():
+                        arch = "64 bits"
+                except:
+                    arch = 'undefined'
+                oslist.append(name+','+version+','+arch+','+systemdrive)
             else:
                 args = 'wmic os get caption, csdversion, osarchitecture, systemdrive /format:list'
                 p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)

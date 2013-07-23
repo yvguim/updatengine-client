@@ -30,7 +30,7 @@ import hashlib
 import time
 import logging
 import shutil
-class uedownload():
+class uedownload(object):
     urlinv = None
     xml = None
     options = None
@@ -85,7 +85,7 @@ class uedownload():
                         try:
                             os.chdir(tmpdir)
                             subprocess.check_call(command, shell = True)
-                        except Exception as inst:
+                        except Exception, inst:
                             print "Error launching action: "+command
                             logging.info("Error launching action: "+command)
                             print type(inst)
@@ -105,7 +105,7 @@ class uedownload():
 
                     try:
                         subprocess.check_call(command, shell = True)
-                    except Exception as inst:
+                    except Exception, inst:
                         print "Error launching action: "+command
                         logging.info("Error launching action: "+command)
                         print type(inst)
@@ -182,7 +182,7 @@ class uedownload():
                         try:
                             os.chdir(tmpdir)
                             subprocess.check_call(command, shell = True)
-                        except Exception as inst:
+                        except Exception, inst:
                             print "Error launching action: "+command
                             logging.exception("Error launching action: "+command)
                             print type(inst)
@@ -204,7 +204,7 @@ class uedownload():
 
                     try:
                         subprocess.check_call(command, shell = True)
-                    except Exception as inst:
+                    except Exception, inst:
                         print "Error launching action: "+command
                         logging.exception("Error launching action: "+command)
                         print type(inst)

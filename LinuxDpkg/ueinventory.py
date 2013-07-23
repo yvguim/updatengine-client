@@ -24,7 +24,7 @@ import subprocess
 import os
 import dmidecode
 import hashlib
-class ueinventory():
+class ueinventory(object):
 
     @staticmethod
     def build_inventory():
@@ -70,7 +70,7 @@ class ueinventory():
                 "+netdata+"\n\
                 </Inventory>"
 
-            return data
+            return (data, softsum)
 
 
     def checkdmi(self, dmixp,tag):
