@@ -228,7 +228,7 @@ class uedownload(object):
                     print "End of download and install "
                     self.download_print_time()
                     inventory = ueinventory.build_inventory()
-                    response_inventory = uecommunication.send_inventory(self.urlinv, inventory, options)
+                    response_inventory = uecommunication.send_inventory(self.urlinv, inventory[0], options)
                     # Break download action if an error occured during a previous install
                     if break_download_action == None:
                         self.download_action(self.urlinv,str(response_inventory),options)
