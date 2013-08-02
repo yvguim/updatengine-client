@@ -1,4 +1,4 @@
 updatengine-client
 ==================
-Version 2.3.3
+Version 2.3.5
 updatengine client allow computer and server to be inventoried automatically on an updatengine server
