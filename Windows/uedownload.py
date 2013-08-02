@@ -292,10 +292,11 @@ class uedownload(object):
             else :
                 print 'md5 don\'t match: ' + self.md5_for_file(file_name) +' --- '+ packagesum
                 logging.debug('md5 don\'t match: ' + self.md5_for_file(file_name) +' --- '+ packagesum)
-                return 0
+                raise
         except:
             logging.exception("Error download_tmp")
-            return "Error download_tmp"
+            raise
+            #return "Error download_tmp"
 
 
 
