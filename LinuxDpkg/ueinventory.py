@@ -58,6 +58,7 @@ class ueinventory(object):
                 <SerialNumber>"+serial.strip()+"</SerialNumber>\n\
                 <Manufacturer>"+manufacturer.strip()+"</Manufacturer>\n\
                 <Uuid>"+uuid.strip()+"</Uuid>\n\
+                <UserName>Undefined</UserName>\n\
                 <Domain>"+domain.strip()+"</Domain>\n\
                 <Language>"+language.strip()+"</Language>\n\
                 <Product>"+product.strip()+"</Product>\n\

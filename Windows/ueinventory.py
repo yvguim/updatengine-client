@@ -42,12 +42,13 @@ class ueinventory(object):
         softsum = str(hashlib.md5(softwaredata).hexdigest()) 
         netdata = self.format_netlist(self.get_netlist())
         netsum =  str(hashlib.md5(netdata).hexdigest())
-
+        username = self.get_username()
         data = "<Inventory>\n\
             <Hostname>"+hostname.strip()+"</Hostname>\n\
             <SerialNumber>"+serial.strip()+"</SerialNumber>\n\
             <Manufacturer>"+manufacturer.strip()+"</Manufacturer>\n\
             <Uuid>"+uuid.strip()+"</Uuid>\n\
+            <UserName>"+username.strip()+"</UserName>\n\
             <Domain>"+domain.strip()+"</Domain>\n\
             <Language>"+language.strip()+"</Language>\n\
             <Product>"+product.strip()+"</Product>\n\
@@ -99,6 +100,15 @@ class ueinventory(object):
         except:
             return 'Unknown'
         
+    def get_username(self):
+        try:
+            args = 'wmic computersystem get username'
+            p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            dom_user = p.stdout.readlines()[1]
+            return dom_user.split('\\')[1]
+        except:
+            return 'Unknown'
+
     def get_domain(self):
         try:
             args = 'wmic computersystem get domain'
@@ -195,25 +205,36 @@ class ueinventory(object):
         return sdata
 
     def get_netlist(self):
-        args = 'wmic nicconfig get ipaddress, macaddress, ipsubnet /format:csv'
+        args = 'wmic nicconfig get ipaddress, macaddress, ipsubnet /format:list'
         p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        netlist = list()
-        for n in p.stdout.readlines():
-            line = n.split(',')
-            if len(line) == 4:
-                if line[1] != '' and line[0] != 'Node':
-                    ip = re.sub('[{}]','', line[1])
-                    ipsplit = ip.split(';')
-                    if len(ipsplit) == 2:
-                        ip = ipsplit[0]
-                    
-                    mask = re.sub('[{}]','',line[2])
-                    masksplit = mask.split(';')
-                    if len(masksplit) == 2:
-                        mask = masksplit[0]
-                
-                    mac = line[3]
-                    netlist.append(ip+','+mask+','+mac)
+        netlist = list()     
+        try:
+            while True:
+                n=p.stdout.readline()
+                line=n.rstrip()
+                if not n: break
+                line = line.split('=')
+                if len(line) == 2:
+                    if line[1] != '' :
+                        if line[0] == 'IPAddress':
+                            ip = re.sub('[{"}]','', line[1])
+                            ipsplit = ip.split(',')
+                            if len(ipsplit) == 2:
+                                ip = ipsplit[0]
+                            n=p.stdout.readline()
+                            line=n.rstrip()
+                            line = line.split('=')
+                            mask = re.sub('[{"}]','',line[1])
+                            masksplit = mask.split(',')
+                            if len(masksplit) == 2:
+                                mask = masksplit[0]
+                            n=p.stdout.readline()
+                            line = n.rstrip()
+                            line = line.split('=')
+                            mac = line[1]
+                            netlist.append(ip+','+mask+','+mac)
+        except:
+            print "Error when building netlist"
         return netlist
 
     def format_netlist(self, netlist):

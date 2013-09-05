@@ -145,8 +145,7 @@ def main():
                 logging.info("Inventory built")
 
             if options.verbose is not None:
-                print inventory
-        
+                logging.info(inventory) 
             if options.inventory is not None and options.server is not None:
                 url = options.server+'/post/'
         
