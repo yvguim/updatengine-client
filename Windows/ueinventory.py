@@ -43,6 +43,12 @@ class ueinventory(object):
         netdata = self.format_netlist(self.get_netlist())
         netsum =  str(hashlib.md5(netdata).hexdigest())
         username = self.get_username()
+        
+        # Abort build_inventory if inventory presents too many errors
+        if serial == 'Unknown' and vendor == 'Unknown' and \
+                product =='Unknown' and domain == 'Unknown' and uuid =='Unknown' and username =='undefined':
+            raise Exception('To many detection error: build_inventory aborted') 
+
         data = "<Inventory>\n\
             <Hostname>"+hostname.strip()+"</Hostname>\n\
             <SerialNumber>"+serial.strip()+"</SerialNumber>\n\
@@ -159,7 +165,7 @@ class ueinventory(object):
                         uninst = QueryValueEx(asubkey, "UninstallString")
                     except:
                         uninst = ('undefined',)
-                    l.append(val[0].encode('utf-8')+','+vers[0].encode('utf-8')+','+uninst[0].encode('utf-8'))
+                    l.append(val[0].encode('utf-8')+',;,'+vers[0].encode('utf-8')+',;,'+uninst[0].encode('utf-8'))
                 except:
                     pass
         except:
@@ -184,8 +190,8 @@ class ueinventory(object):
                     except:
                         uninst = ('undefined',)
                                         # Prevent double detection for 32 bits systels
-                    if not val[0].encode('utf-8')+','+vers[0].encode('utf-8')+','+uninst[0].encode('utf-8') in l:
-                           l.append(val[0].encode('utf-8')+','+vers[0].encode('utf-8')+','+uninst[0].encode('utf-8'))
+                    if not val[0].encode('utf-8')+',;,'+vers[0].encode('utf-8')+',;,'+uninst[0].encode('utf-8') in l:
+                           l.append(val[0].encode('utf-8')+',;,'+vers[0].encode('utf-8')+',;,'+uninst[0].encode('utf-8'))
                 except:
                     pass
         except:
@@ -195,7 +201,7 @@ class ueinventory(object):
     def format_softlist(self, slist):
         sdata =""
         for s in slist:
-            line = s.split(',')
+            line = s.split(',;,')
             if len(line) == 3:
                 sdata += "<Software>\n\
                 <Name>"+line[0].strip()+"</Name>\n\
