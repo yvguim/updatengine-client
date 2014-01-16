@@ -63,6 +63,8 @@ def main():
                    action="store_false", help="Port of your UpdatEngine server")
     parser.add_option("-v", "--verbose", dest="verbose", \
                    action="store_false", help="Verbose mode")
+    parser.add_option("-n", "--noproxy", dest="noproxy", \
+                   action="store_false", help="do not use any proxy")
     parser.add_option("-m", "--minutes", dest="minute", \
                    type="int", help="Minute between each inventory")
     parser.add_option("-c", "--cert", dest="cert", \

@@ -70,8 +70,11 @@ class uecommunication(object):
                     self.check_ssl(hostname, int(port), options.cert)
             except:
                 raise
-        
-        opener = urllib2.build_opener( urllib2.HTTPSHandler(), cookieHandler )
+        if options.noproxy is not None:
+            proxy_handler = urllib2.ProxyHandler({})
+            opener = urllib2.build_opener( urllib2.HTTPSHandler(), cookieHandler, proxy_handler )
+        else:  
+            opener = urllib2.build_opener( urllib2.HTTPSHandler(), cookieHandler )
         urllib2.install_opener( opener )
         
         try:
@@ -143,9 +146,13 @@ class uecommunication(object):
                     self.check_ssl(hostname, int(port), options.cert)
             except:
                 raise
-        opener = urllib2.build_opener( urllib2.HTTPSHandler(), cookieHandler )
+        if options.noproxy is not None:
+            proxy_handler = urllib2.ProxyHandler({})
+            opener = urllib2.build_opener( urllib2.HTTPSHandler(), cookieHandler, proxy_handler )
+        else:  
+            opener = urllib2.build_opener( urllib2.HTTPSHandler(), cookieHandler )
         urllib2.install_opener( opener )
-        
+                
         try:
             opener.open(url)
         except Exception:
