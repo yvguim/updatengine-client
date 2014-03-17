@@ -28,37 +28,36 @@ class ueinventory(object):
     @staticmethod
     def build_inventory():
         self = ueinventory()
-        manufacturer = self.get_manufacturer()
-        product = self.get_product()
-        serial = self.get_serial()
-        uuid = self.get_uuid()
-        domain = self.get_domain()
-        language = self.get_language()
-        hostname = self.get_hostname()
-        chassistype = self.get_chassistype()
+        manufacturer = self.get_manufacturer().strip()
+        product = self.get_product().strip()
+        serial = self.get_serial().strip()
+        uuid = self.get_uuid().strip()
+        domain = self.get_domain().strip()
+        language = self.get_language().strip()
+        hostname = self.get_hostname().strip()
+        chassistype = self.get_chassistype().strip()
         osdata = self.format_oslist(self.get_oslist())
         ossum =  str(hashlib.md5(osdata).hexdigest())
         softwaredata = self.format_softlist(self.get_softwarelist())
         softsum = str(hashlib.md5(softwaredata).hexdigest()) 
         netdata = self.format_netlist(self.get_netlist())
         netsum =  str(hashlib.md5(netdata).hexdigest())
-        username = self.get_username()
+        username = self.get_username().strip()
         
         # Abort build_inventory if inventory presents too many errors
-        if serial == 'Unknown' and vendor == 'Unknown' and \
-                product =='Unknown' and domain == 'Unknown' and uuid =='Unknown' and username =='undefined':
+        if serial == manufacturer == product == domain == uuid == username == 'Unknown':
             raise Exception('To many detection error: build_inventory aborted') 
 
         data = "<Inventory>\n\
-            <Hostname>"+hostname.strip()+"</Hostname>\n\
-            <SerialNumber>"+serial.strip()+"</SerialNumber>\n\
-            <Manufacturer>"+manufacturer.strip()+"</Manufacturer>\n\
-            <Uuid>"+uuid.strip()+"</Uuid>\n\
-            <UserName>"+username.strip()+"</UserName>\n\
-            <Domain>"+domain.strip()+"</Domain>\n\
-            <Language>"+language.strip()+"</Language>\n\
-            <Product>"+product.strip()+"</Product>\n\
-            <Chassistype>"+chassistype.strip()+"</Chassistype>\n\
+            <Hostname>"+hostname+"</Hostname>\n\
+            <SerialNumber>"+serial+"</SerialNumber>\n\
+            <Manufacturer>"+manufacturer+"</Manufacturer>\n\
+            <Uuid>"+uuid+"</Uuid>\n\
+            <UserName>"+username+"</UserName>\n\
+            <Domain>"+domain+"</Domain>\n\
+            <Language>"+language+"</Language>\n\
+            <Product>"+product+"</Product>\n\
+            <Chassistype>"+chassistype+"</Chassistype>\n\
             <Ossum>"+ossum+"</Ossum>\n\
             <Softsum>"+softsum+"</Softsum>\n\
             <Netsum>"+netsum+"</Netsum>\n\
