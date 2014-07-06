@@ -200,6 +200,7 @@ class ueinventory(object):
     def format_softlist(self, slist):
         sdata =""
         for s in slist:
+            s = self.encodeXMLText(s)
             line = s.split(',;,')
             if len(line) == 3:
                 sdata += "<Software>\n\
@@ -208,6 +209,12 @@ class ueinventory(object):
                 <Uninstall>"+line[2].strip()+"</Uninstall>\n\
                 </Software>\n"
         return sdata
+
+
+    def encodeXMLText(self,text):
+        text = text.replace("<", "&lt;")
+        text = text.replace(">", "&gt;")
+        return text
 
     def get_netlist(self):
         args = 'wmic nicconfig get ipaddress, macaddress, ipsubnet /format:list'
