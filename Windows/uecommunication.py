@@ -1,4 +1,3 @@
-
 ###############################################################################
 # UpdatEngine - Software Packages Deployment and Administration tool          #
 #                                                                             #
@@ -28,6 +27,8 @@ from ueerrors import *
 
 class uecommunication(object):
 
+    ssl_version = ssl.PROTOCOL_SSLv23
+
     def check_ssl(self, hostname, port, cafile_local):
         try:
             open(cafile_local,'r')
@@ -36,7 +37,7 @@ class uecommunication(object):
             raise
 
         try:
-            ssl.get_server_certificate((hostname, port), ca_certs=cafile_local)
+            ssl.get_server_certificate((hostname, port), ssl_version=self.ssl_version, ca_certs=cafile_local)
         except ssl.SSLError:
             print "Error in check_ssl (ssl.get_server_certificate function)"
             raise ssl.SSLError('SSL cert of Host:'+str(hostname)+' Port:'+str(port)+' is invalid')  
@@ -72,9 +73,9 @@ class uecommunication(object):
                 raise
         if options.noproxy is not None:
             proxy_handler = urllib2.ProxyHandler({})
-            opener = urllib2.build_opener( urllib2.HTTPSHandler(), cookieHandler, proxy_handler )
+            opener = urllib2.build_opener( urllib2.HTTPSHandler(context=ssl.SSLContext(self.ssl_version)), cookieHandler, proxy_handler )
         else:  
-            opener = urllib2.build_opener( urllib2.HTTPSHandler(), cookieHandler )
+            opener = urllib2.build_opener( urllib2.HTTPSHandler(context=ssl.SSLContext(self.ssl_version)), cookieHandler )
         urllib2.install_opener( opener )
         
         try:
@@ -148,9 +149,9 @@ class uecommunication(object):
                 raise
         if options.noproxy is not None:
             proxy_handler = urllib2.ProxyHandler({})
-            opener = urllib2.build_opener( urllib2.HTTPSHandler(), cookieHandler, proxy_handler )
+            opener = urllib2.build_opener( urllib2.HTTPSHandler(context=ssl.SSLContext(self.ssl_version)), cookieHandler, proxy_handler )
         else:  
-            opener = urllib2.build_opener( urllib2.HTTPSHandler(), cookieHandler )
+            opener = urllib2.build_opener( urllib2.HTTPSHandler(context=ssl.SSLContext(self.ssl_version)), cookieHandler )
         urllib2.install_opener( opener )
                 
         try:
