@@ -44,7 +44,7 @@ class uecommunication(object):
     def printable(self, s):
         import string
         s = s.replace('&','&amp;')
-        return filter(lambda x: x in string.printable, s)
+        return ''.join([ch for ch in s if ord(ch) > 31 or ord(ch) == 9])
 
     @staticmethod
     def send_xml(url,xml,action,options = None):
