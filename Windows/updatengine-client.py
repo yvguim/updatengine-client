@@ -22,9 +22,11 @@
 ###############################################################################
 
 
+import os
 import optparse
 import time
 import logging
+from urlparse import urlparse
 from ueinventory import ueinventory
 from uecommunication import uecommunication
 from uedownload import uedownload
@@ -38,7 +40,7 @@ def wait(minutes, passphrase):
     Host = ''
     Port = 2010
     Sock.bind((Host,Port))
-    Sock.listen(1)
+    Sock.listen(3)
     limit = datetime.now()+timedelta(minutes=minutes)
     print "wait for connexion with passphrase %s or %s" % (passphrase, limit)
     try:
@@ -47,6 +49,7 @@ def wait(minutes, passphrase):
             RequeteDuClient = client.recv(255)
             print RequeteDuClient
             if RequeteDuClient == passphrase:
+                client.close()
                 Sock.close()
                 return
     except socket.timeout:
