@@ -22,18 +22,16 @@
 ###############################################################################
 
 
-import os
 import optparse
 import time
 import logging
-from urlparse import urlparse
+import socket
 from ueinventory import ueinventory
 from uecommunication import uecommunication
 from uedownload import uedownload
+from datetime import datetime, timedelta
 
 def wait(minutes, passphrase):
-    import socket
-    from datetime import datetime, timedelta
     socket.setdefaulttimeout(minutes*60)
     Sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     Sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
