@@ -1,4 +1,3 @@
-
 ###############################################################################
 # UpdatEngine - Software Packages Deployment and Administration tool          #
 #                                                                             #

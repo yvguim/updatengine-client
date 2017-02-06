@@ -23,6 +23,8 @@ import platform, subprocess
 import re
 from _winreg import *
 import hashlib
+import sys
+
 class ueinventory(object):
 
     @staticmethod
@@ -70,7 +72,7 @@ class ueinventory(object):
         try:
             args = 'wmic bios get serialnumber'
             p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            return p.stdout.readlines()[1]
+            return p.stdout.readlines()[1].decode(sys.stdout.encoding).encode('utf8')
         except:
             return 'Unknown'
 
@@ -85,7 +87,7 @@ class ueinventory(object):
         try:
             args = 'wmic csproduct get vendor'
             p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            return p.stdout.readlines()[1]
+            return p.stdout.readlines()[1].decode(sys.stdout.encoding).encode('utf8')
         except:
             return 'Unknown'
 
@@ -93,7 +95,7 @@ class ueinventory(object):
         try:
             args = 'wmic csproduct get name'
             p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            return p.stdout.readlines()[1]
+            return p.stdout.readlines()[1].decode(sys.stdout.encoding).encode('utf8')
         except:
             return 'Unknown'
 
@@ -101,7 +103,7 @@ class ueinventory(object):
         try:
             args = 'wmic path win32_computersystemproduct get uuid'
             p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            return p.stdout.readlines()[1]
+            return p.stdout.readlines()[1].decode(sys.stdout.encoding).encode('utf8')
         except:
             return 'Unknown'
         
@@ -110,7 +112,7 @@ class ueinventory(object):
             args = 'wmic computersystem get username'
             p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             dom_user = p.stdout.readlines()[1]
-            return dom_user.split('\\')[1]
+            return dom_user.split('\\')[1].decode(sys.stdout.encoding).encode('utf8')
         except:
             return 'Unknown'
 
@@ -118,7 +120,7 @@ class ueinventory(object):
         try:
             args = 'wmic computersystem get domain'
             p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            return p.stdout.readlines()[1]
+            return p.stdout.readlines()[1].decode(sys.stdout.encoding).encode('utf8')
         except:
             return 'Unknown'
 
@@ -140,7 +142,7 @@ class ueinventory(object):
             p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             typestring =  p.stdout.readlines()[1]
             chassisnumber = int(re.findall(r'\d+',typestring)[0])
-            return chassis[chassisnumber]
+            return chassis[chassisnumber].decode(sys.stdout.encoding).encode('utf8')
         except:
             return 'Detection error'
 

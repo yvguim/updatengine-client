@@ -1,4 +1,3 @@
-
 ###############################################################################
 # UpdatEngine - Software Packages Deployment and Administration tool          #
 #                                                                             #
@@ -31,6 +30,7 @@ import time
 import logging
 import shutil
 import sys
+
 class uedownload(object):
     urlinv = None
     xml = None
