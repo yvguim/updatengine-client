@@ -23,6 +23,8 @@ import platform, subprocess
 import re
 from _winreg import *
 import hashlib
+import sys
+
 class ueinventory(object):
 
     @staticmethod
@@ -70,14 +72,15 @@ class ueinventory(object):
         try:
             args = 'wmic bios get serialnumber'
             p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            return p.stdout.readlines()[1]
+            return p.stdout.readlines()[1].decode(sys.stdout.encoding).encode('utf8')
         except:
             return 'Unknown'
 
     def get_hostname(self):
         try:
-            p = platform.node()
-            return p
+            args = 'wmic computersystem get name'
+            p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            return p.stdout.readlines()[1].decode(sys.stdout.encoding).encode('utf8')
         except:
             return 'Unkown'
 
@@ -85,7 +88,7 @@ class ueinventory(object):
         try:
             args = 'wmic csproduct get vendor'
             p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            return p.stdout.readlines()[1]
+            return p.stdout.readlines()[1].decode(sys.stdout.encoding).encode('utf8')
         except:
             return 'Unknown'
 
@@ -93,7 +96,7 @@ class ueinventory(object):
         try:
             args = 'wmic csproduct get name'
             p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            return p.stdout.readlines()[1]
+            return p.stdout.readlines()[1].decode(sys.stdout.encoding).encode('utf8')
         except:
             return 'Unknown'
 
@@ -101,7 +104,7 @@ class ueinventory(object):
         try:
             args = 'wmic path win32_computersystemproduct get uuid'
             p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            return p.stdout.readlines()[1]
+            return p.stdout.readlines()[1].decode(sys.stdout.encoding).encode('utf8')
         except:
             return 'Unknown'
         
@@ -110,7 +113,7 @@ class ueinventory(object):
             args = 'wmic computersystem get username'
             p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             dom_user = p.stdout.readlines()[1]
-            return dom_user.split('\\')[1]
+            return dom_user.split('\\')[1].decode(sys.stdout.encoding).encode('utf8')
         except:
             return 'Unknown'
 
@@ -118,7 +121,7 @@ class ueinventory(object):
         try:
             args = 'wmic computersystem get domain'
             p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            return p.stdout.readlines()[1]
+            return p.stdout.readlines()[1].decode(sys.stdout.encoding).encode('utf8')
         except:
             return 'Unknown'
 
@@ -140,7 +143,7 @@ class ueinventory(object):
             p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             typestring =  p.stdout.readlines()[1]
             chassisnumber = int(re.findall(r'\d+',typestring)[0])
-            return chassis[chassisnumber]
+            return chassis[chassisnumber].decode(sys.stdout.encoding).encode('utf8')
         except:
             return 'Detection error'
 
@@ -272,9 +275,9 @@ class ueinventory(object):
                 raw = p.stdout.readlines()[2]
                 line = raw.split(',')
                 if len(line) == 4:
-                    name = line[1].strip()
-                    version = line[2].strip()
-                    systemdrive = line[3].strip()
+                    name = line[1].strip().decode(sys.stdout.encoding).encode('utf8')
+                    version = line[2].strip().decode(sys.stdout.encoding).encode('utf8')
+                    systemdrive = line[3].strip().decode(sys.stdout.encoding).encode('utf8')
                 try:
                     args = 'wmic computersystem get systemtype /format:csv'
                     p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -291,10 +294,10 @@ class ueinventory(object):
                 args = 'wmic os get caption, csdversion, osarchitecture, systemdrive /format:list'
                 p = subprocess.Popen(args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
                 raw = p.stdout.readlines()
-                name = raw[2].split("=",1)[1].strip()
-                version = raw[3].split("=",1)[1].strip()
-                arch = raw[4].split("=",1)[1].strip()
-                systemdrive = raw[5].split("=",1)[1].strip()
+                name = raw[2].split("=",1)[1].strip().decode(sys.stdout.encoding).encode('utf8')
+                version = raw[3].split("=",1)[1].strip().decode(sys.stdout.encoding).encode('utf8')
+                arch = raw[4].split("=",1)[1].strip().decode(sys.stdout.encoding).encode('utf8')
+                systemdrive = raw[5].split("=",1)[1].strip().decode(sys.stdout.encoding).encode('utf8')
                 oslist.append(name+','+version+','+arch+','+systemdrive)
         except:
                oslist = ('Unkown, Unknown, Unknown, Unknown')

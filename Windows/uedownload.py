@@ -1,4 +1,3 @@
-
 ###############################################################################
 # UpdatEngine - Software Packages Deployment and Administration tool          #
 #                                                                             #
@@ -30,6 +29,8 @@ import hashlib
 import time
 import logging
 import shutil
+import sys
+
 class uedownload(object):
     urlinv = None
     xml = None
@@ -84,7 +85,7 @@ class uedownload(object):
 
                         try:
                             os.chdir(tmpdir)
-                            subprocess.check_call(command, shell = True)
+                            subprocess.check_call(command.encode(sys.getfilesystemencoding()), shell = True)
                         except Exception, inst:
                             print "Error launching action: "+command
                             logging.info("Error launching action: "+command)
@@ -104,7 +105,7 @@ class uedownload(object):
                     logging.info('Install in progress')
 
                     try:
-                        subprocess.check_call(command, shell = True)
+                        subprocess.check_call(command.encode(sys.getfilesystemencoding()), shell = True)
                     except Exception, inst:
                         print "Error launching action: "+command
                         logging.info("Error launching action: "+command)
@@ -181,7 +182,7 @@ class uedownload(object):
 
                         try:
                             os.chdir(tmpdir)
-                            subprocess.check_call(command, shell = True)
+                            subprocess.check_call(command.encode(sys.getfilesystemencoding()), shell = True)
                         except Exception, inst:
                             print "Error launching action: "+command
                             logging.exception("Error launching action: "+command)
@@ -203,7 +204,7 @@ class uedownload(object):
                     self.download_send_status('Install in progress')
 
                     try:
-                        subprocess.check_call(command, shell = True)
+                        subprocess.check_call(command.encode(sys.getfilesystemencoding()), shell = True)
                     except Exception, inst:
                         print "Error launching action: "+command
                         logging.exception("Error launching action: "+command)
